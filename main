@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>US Election Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .panel h2 {
+            color: #667eea;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .states-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            max-height: 600px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .state-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .state-item:hover {
+            background: #e8eaf6;
+            transform: translateX(5px);
+        }
+
+        .state-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        .state-info {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .candidate-input {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .candidate-input input {
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 0.85em;
+        }
+
+        .candidate-input input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+        }
+
+        .candidate-selector {
+            display: flex;
+            gap: 5px;
+            margin-top: 8px;
+        }
+
+        .state-winner-btn {
+            flex: 1;
+            padding: 6px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.8em;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+
+        .state-winner-btn.blue {
+            border-color: #2196F3;
+            background: #2196F3;
+            color: white;
+        }
+
+        .state-winner-btn.red {
+            border-color: #f44336;
+            background: #f44336;
+            color: white;
+        }
+
+        .state-winner-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .results-section {
+            display: grid;
+            gap: 20px;
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .result-card h3 {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .result-value {
+            font-size: 2.5em;
+            font-weight: bold;
+        }
+
+        .winner-announcement {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .winner-announcement.blue {
+            background: linear-gradient(135deg, #667eea 0%, #2196F3 100%);
+        }
+
+        .winner-announcement.red {
+            background: linear-gradient(135deg, #f5576c 0%, #c71585 100%);
+        }
+
+        .winner-announcement.tie {
+            background: linear-gradient(135deg, #ffa500 0%, #ff8c00 100%);
+        }
+
+        .electoral-map {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .state-box {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.8em;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            color: white;
+        }
+
+        .state-box:hover {
+            transform: scale(1.1);
+        }
+
+        .state-box.blue {
+            background: #2196F3;
+        }
+
+        .state-box.red {
+            background: #f44336;
+        }
+
+        .state-box.unassigned {
+            background: #ccc;
+        }
+
+        .state-box .abbr {
+            font-size: 1em;
+        }
+
+        .state-box .ev {
+            font-size: 0.7em;
+            opacity: 0.8;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-reset {
+            background: #f44336;
+            color: white;
+            flex: 1;
+        }
+
+        .btn-reset:hover {
+            background: #d32f2f;
+            transform: scale(1.05);
+        }
+
+        .btn-random {
+            background: #4CAF50;
+            color: white;
+            flex: 1;
+        }
+
+        .btn-random:hover {
+            background: #388E3C;
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .states-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .electoral-map {
+                grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+            }
+        }
+
+        .scrollable {
+            scrollbar-width: thin;
+            scrollbar-color: #667eea #f1f1f1;
+        }
+
+        .scrollable::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .scrollable::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .scrollable::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        .scrollable::-webkit-scrollbar-thumb:hover {
+            background: #764ba2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🗳️ US Election Calculator</h1>
+            <p class="subtitle">Design mock election scenarios and track electoral votes</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Left Panel: State Input -->
+            <div class="panel">
+                <h2>📊 States & Votes</h2>
+                <div class="controls">
+                    <input type="text" id="candidateName1" placeholder="Candidate 1 Name" value="Candidate A">\n                    <input type="text" id="candidateName2" placeholder="Candidate 2 Name" value="Candidate B">\n                </div>
+                <div class="states-grid scrollable" id="statesGrid"></div>
+                <div class="controls">
+                    <button class="btn-random" onclick="fillRandomVotes()">🎲 Random Votes</button>
+                    <button class="btn-reset" onclick="resetAll()">🔄 Reset</button>
+                </div>
+            </div>
+
+            <!-- Right Panel: Results -->
+            <div class="panel">
+                <h2>📈 Results</h2>
+                <div id="winner" class="winner-announcement" style="display:none;"></div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="result-card">
+                        <h3>Electoral Votes</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div>
+                                <div style="font-size: 0.8em; opacity: 0.9;">Candidate 1</div>
+                                <div class="result-value" id="ev1" style="color: #2196F3;">0</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.8em; opacity: 0.9;">Candidate 2</div>
+                                <div class="result-value" id="ev2" style="color: #f44336;">0</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="result-card">
+                        <h3>Popular Votes</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div>
+                                <div style="font-size: 0.8em; opacity: 0.9;">Candidate 1</div>
+                                <div class="result-value" id="pv1" style="color: #2196F3;">0</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.8em; opacity: 0.9;">Candidate 2</div>
+                                <div class="result-value" id="pv2" style="color: #f44336;">0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 style="color: #667eea; margin-top: 25px; margin-bottom: 15px;">270 to Win</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                    <div style="background: #f0f0f0; padding: 15px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 0.9em; color: #666; margin-bottom: 8px;" id="cand1Label">Candidate A</div>
+                        <div style="font-size: 1.8em; font-weight: bold; color: #2196F3;" id="evBar1">0/270</div>
+                        <div style="background: #ddd; height: 8px; border-radius: 4px; margin-top: 8px; overflow: hidden;">
+                            <div id="evBarFill1" style="background: #2196F3; height: 100%; width: 0%; transition: width 0.3s;"></div>
+                        </div>
+                    </div>
+                    <div style="background: #f0f0f0; padding: 15px; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 0.9em; color: #666; margin-bottom: 8px;" id="cand2Label">Candidate B</div>
+                        <div style="font-size: 1.8em; font-weight: bold; color: #f44336;" id="evBar2">0/270</div>
+                        <div style="background: #ddd; height: 8px; border-radius: 4px; margin-top: 8px; overflow: hidden;">
+                            <div id="evBarFill2" style="background: #f44336; height: 100%; width: 0%; transition: width 0.3s;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 style="color: #667eea; margin-bottom: 15px;">Electoral Map</h3>
+                <div class="electoral-map" id="electoralMap"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State data with electoral votes
+        const STATES = [
+            { name: 'Alabama', abbr: 'AL', ev: 9 },
+            { name: 'Alaska', abbr: 'AK', ev: 3 },
+            { name: 'Arizona', abbr: 'AZ', ev: 11 },
+            { name: 'Arkansas', abbr: 'AR', ev: 6 },
+            { name: 'California', abbr: 'CA', ev: 54 },
+            { name: 'Colorado', abbr: 'CO', ev: 9 },
+            { name: 'Connecticut', abbr: 'CT', ev: 7 },
+            { name: 'Delaware', abbr: 'DE', ev: 3 },
+            { name: 'Florida', abbr: 'FL', ev: 30 },
+            { name: 'Georgia', abbr: 'GA', ev: 16 },
+            { name: 'Hawaii', abbr: 'HI', ev: 4 },
+            { name: 'Idaho', abbr: 'ID', ev: 4 },
+            { name: 'Illinois', abbr: 'IL', ev: 19 },
+            { name: 'Indiana', abbr: 'IN', ev: 11 },
+            { name: 'Iowa', abbr: 'IA', ev: 6 },
+            { name: 'Kansas', abbr: 'KS', ev: 6 },
+            { name: 'Kentucky', abbr: 'KY', ev: 8 },
+            { name: 'Louisiana', abbr: 'LA', ev: 8 },
+            { name: 'Maine', abbr: 'ME', ev: 4 },
+            { name: 'Maryland', abbr: 'MD', ev: 10 },
+            { name: 'Massachusetts', abbr: 'MA', ev: 11 },
+            { name: 'Michigan', abbr: 'MI', ev: 15 },
+            { name: 'Minnesota', abbr: 'MN', ev: 10 },
+            { name: 'Mississippi', abbr: 'MS', ev: 6 },
+            { name: 'Missouri', abbr: 'MO', ev: 10 },
+            { name: 'Montana', abbr: 'MT', ev: 4 },
+            { name: 'Nebraska', abbr: 'NE', ev: 5 },
+            { name: 'Nevada', abbr: 'NV', ev: 6 },
+            { name: 'New Hampshire', abbr: 'NH', ev: 4 },
+            { name: 'New Jersey', abbr: 'NJ', ev: 14 },
+            { name: 'New Mexico', abbr: 'NM', ev: 5 },
+            { name: 'New York', abbr: 'NY', ev: 28 },
+            { name: 'North Carolina', abbr: 'NC', ev: 16 },
+            { name: 'North Dakota', abbr: 'ND', ev: 3 },
+            { name: 'Ohio', abbr: 'OH', ev: 17 },
+            { name: 'Oklahoma', abbr: 'OK', ev: 7 },
+            { name: 'Oregon', abbr: 'OR', ev: 8 },
+            { name: 'Pennsylvania', abbr: 'PA', ev: 19 },
+            { name: 'Rhode Island', abbr: 'RI', ev: 4 },
+            { name: 'South Carolina', abbr: 'SC', ev: 9 },
+            { name: 'South Dakota', abbr: 'SD', ev: 3 },
+            { name: 'Tennessee', abbr: 'TN', ev: 11 },
+            { name: 'Texas', abbr: 'TX', ev: 40 },
+            { name: 'Utah', abbr: 'UT', ev: 6 },
+            { name: 'Vermont', abbr: 'VT', ev: 3 },
+            { name: 'Virginia', abbr: 'VA', ev: 13 },
+            { name: 'Washington', abbr: 'WA', ev: 12 },
+            { name: 'West Virginia', abbr: 'WV', ev: 5 },
+            { name: 'Wisconsin', abbr: 'WI', ev: 10 },
+            { name: 'Wyoming', abbr: 'WY', ev: 3 }
+        ];
+
+        // State votes storage
+        const stateVotes = {};
+        STATES.forEach(state => {
+            stateVotes[state.abbr] = { candidate1: 0, candidate2: 0, winner: null };
+        });
+
+        // Initialize the app
+        function init() {
+            renderStates();
+            updateResults();
+        }
+
+        // Render state input controls
+        function renderStates() {
+            const grid = document.getElementById('statesGrid');
+            grid.innerHTML = '';
+
+            STATES.forEach(state => {
+                const stateDiv = document.createElement('div');
+                stateDiv.className = 'state-item';
+                stateDiv.innerHTML = `
+                    <div class="state-name">${state.name}</div>
+                    <div class="state-info">${state.ev} Electoral Votes</div>
+                    <div class="candidate-input">
+                        <input type="number" min="0" class="vote-input" data-state="${state.abbr}" data-candidate="1" placeholder="Votes 1" value="${stateVotes[state.abbr].candidate1}">
+                        <input type="number" min="0" class="vote-input" data-state="${state.abbr}" data-candidate="2" placeholder="Votes 2" value="${stateVotes[state.abbr].candidate2}">
+                    </div>
+                    <div class="candidate-selector">
+                        <button class="state-winner-btn blue" onclick="setWinner('${state.abbr}', 1)">Candidate 1</button>
+                        <button class="state-winner-btn red" onclick="setWinner('${state.abbr}', 2)">Candidate 2</button>
+                    </div>
+                `;
+
+                // Add event listeners to vote inputs
+                stateDiv.querySelectorAll('.vote-input').forEach(input => {
+                    input.addEventListener('change', function() {
+                        const abbr = this.getAttribute('data-state');
+                        const candidate = this.getAttribute('data-candidate');
+                        stateVotes[abbr]['candidate' + candidate] = parseInt(this.value) || 0;
+                        updateResults();
+                    });
+                });
+
+                grid.appendChild(stateDiv);
+            });
+        }
+
+        // Set the winner of a state
+        function setWinner(abbr, candidateNum) {
+            stateVotes[abbr].winner = candidateNum;
+            updateResults();
+        }
+
+        // Update all results
+        function updateResults() {
+            let ev1 = 0, ev2 = 0;
+            let pv1 = 0, pv2 = 0;
+
+            // Calculate electoral and popular votes
+            STATES.forEach(state => {
+                const votes = stateVotes[state.abbr];
+                if (votes.winner === 1) {
+                    ev1 += state.ev;
+                } else if (votes.winner === 2) {
+                    ev2 += state.ev;
+                }
+                pv1 += votes.candidate1;
+                pv2 += votes.candidate2;
+            });
+
+            // Update displays
+            document.getElementById('ev1').textContent = ev1;
+            document.getElementById('ev2').textContent = ev2;
+            document.getElementById('pv1').textContent = pv1.toLocaleString();
+            document.getElementById('pv2').textContent = pv2.toLocaleString();
+
+            const cand1Name = document.getElementById('candidateName1').value || 'Candidate 1';
+            const cand2Name = document.getElementById('candidateName2').value || 'Candidate 2';
+
+            document.getElementById('cand1Label').textContent = cand1Name;
+            document.getElementById('cand2Label').textContent = cand2Name;
+            document.getElementById('evBar1').textContent = ev1 + '/270';
+            document.getElementById('evBar2').textContent = ev2 + '/270';
+
+            // Update progress bars
+            const fill1 = (ev1 / 270) * 100;
+            const fill2 = (ev2 / 270) * 100;
+            document.getElementById('evBarFill1').style.width = Math.min(fill1, 100) + '%';
+            document.getElementById('evBarFill2').style.width = Math.min(fill2, 100) + '%';
+
+            // Show winner announcement
+            const winnerDiv = document.getElementById('winner');
+            if (ev1 >= 270) {
+                winnerDiv.textContent = `🎉 ${cand1Name} Wins!`;
+                winnerDiv.className = 'winner-announcement blue';
+                winnerDiv.style.display = 'block';
+            } else if (ev2 >= 270) {
+                winnerDiv.textContent = `🎉 ${cand2Name} Wins!`;
+                winnerDiv.className = 'winner-announcement red';
+                winnerDiv.style.display = 'block';
+            } else if (ev1 === ev2 && ev1 > 0) {
+                winnerDiv.textContent = `⚖️ Tied at ${ev1} Electoral Votes`;
+                winnerDiv.className = 'winner-announcement tie';
+                winnerDiv.style.display = 'block';
+            } else {
+                winnerDiv.style.display = 'none';
+            }
+
+            updateElectoralMap();
+        }
+
+        // Update electoral map visualization
+        function updateElectoralMap() {
+            const map = document.getElementById('electoralMap');
+            map.innerHTML = '';
+
+            STATES.forEach(state => {
+                const box = document.createElement('div');
+                box.className = 'state-box';
+                const winner = stateVotes[state.abbr].winner;
+
+                if (winner === 1) {
+                    box.classList.add('blue');
+                } else if (winner === 2) {
+                    box.classList.add('red');
+                } else {
+                    box.classList.add('unassigned');
+                }
+
+                box.innerHTML = `
+                    <span class="abbr">${state.abbr}</span>
+                    <span class="ev">${state.ev}EV</span>
+                `;
+
+                box.onclick = () => {
+                    const newWinner = winner === 1 ? 2 : (winner === 2 ? null : 1);
+                    stateVotes[state.abbr].winner = newWinner;
+                    updateResults();
+                };
+
+                map.appendChild(box);
+            });
+        }
+
+        // Fill with random votes
+        function fillRandomVotes() {
+            STATES.forEach(state => {
+                const maxVotes = state.ev * 10000;
+                stateVotes[state.abbr].candidate1 = Math.floor(Math.random() * maxVotes);
+                stateVotes[state.abbr].candidate2 = Math.floor(Math.random() * maxVotes);
+                stateVotes[state.abbr].winner = Math.random() > 0.5 ? 1 : 2;
+            });
+            renderStates();
+            updateResults();
+        }
+
+        // Reset all data
+        function resetAll() {
+            STATES.forEach(state => {
+                stateVotes[state.abbr] = { candidate1: 0, candidate2: 0, winner: null };
+            });
+            renderStates();
+            updateResults();
+        }
+
+        // Update candidate names in real-time
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('candidateName1').addEventListener('change', updateResults);
+            document.getElementById('candidateName2').addEventListener('change', updateResults);
+        });
+
+        // Initialize on page load
+        init();
+    </script>
+</body>
+</html>
